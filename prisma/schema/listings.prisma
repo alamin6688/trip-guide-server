@@ -1,0 +1,18 @@
+model Listing {
+  id            String   @id @default(uuid())
+  guideId       String
+  title         String
+  description   String
+  price         Float
+  durationHours Int
+  city          String
+  isActive      Boolean  @default(true)
+
+  guide    Guide    @relation(fields: [guideId], references: [id])
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("listings")
+}

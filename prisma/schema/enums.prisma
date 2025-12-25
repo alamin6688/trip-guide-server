@@ -1,0 +1,39 @@
+enum UserRole {
+    SUPER_ADMIN
+    ADMIN
+    GUIDE
+    TOURIST
+}
+
+enum UserStatus {
+    ACTIVE
+    BLOCKED
+    DELETED
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    COMPLETED
+    CANCELED
+}
+
+enum PaymentStatus {
+    PAID
+    UNPAID
+    REFUNDED
+}
+
+enum TourCategory {
+    FOOD
+    CULTURE
+    ADVENTURE
+    ART
+    NIGHTLIFE
+    HISTORY
+}

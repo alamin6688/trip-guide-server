@@ -1,0 +1,80 @@
+model User {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  password           String
+  role               UserRole
+  needPasswordChange Boolean    @default(true)
+  status             UserStatus @default(ACTIVE)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  admin   Admin?
+  guide   Guide?
+  tourist Tourist?
+
+  @@map("users")
+}
+
+model Admin {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  profilePhoto  String?
+  contactNumber String
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  @@map("admins")
+}
+
+model Guide {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  profilePhoto  String?
+  contactNumber String
+  address       String?
+  gender        Gender
+  bio           String?
+  city          String
+  country       String
+  dailyRate     Float?
+  hourlyRate    Float?
+  experience    Int
+  averageRating Float    @default(0)
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  guideCategories GuideCategories[]
+  listings        Listing[]
+  bookings        Booking[]
+  reviews         Review[]
+
+  @@map("guides")
+}
+
+model Tourist {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  profilePhoto  String?
+  contactNumber String?
+  address       String?
+  country       String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [email], references: [email])
+
+  bookings Booking[]
+  reviews  Review[]
+
+  @@map("tourists")
+}

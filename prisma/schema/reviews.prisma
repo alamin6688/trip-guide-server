@@ -1,0 +1,20 @@
+model Review {
+    id String @id @default(uuid())
+
+    bookingId String  @unique
+    booking   Booking @relation(fields: [bookingId], references: [id])
+
+    guideId String
+    guide   Guide  @relation(fields: [guideId], references: [id])
+
+    touristId String
+    tourist   Tourist @relation(fields: [touristId], references: [id])
+
+    rating  Float
+    comment String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("reviews")
+}
