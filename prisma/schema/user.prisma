@@ -34,6 +34,7 @@ model Guide {
   id            String   @id @default(uuid())
   email         String   @unique
   name          String
+  languages     String[]
   profilePhoto  String?
   contactNumber String
   address       String?
@@ -41,35 +42,37 @@ model Guide {
   bio           String?
   city          String
   country       String
-  dailyRate     Float?
-  hourlyRate    Float?
-  experience    Int
+  dailyRate     Float
+  experience    Int      @default(0)
   averageRating Float    @default(0)
   isDeleted     Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  user User @relation(fields: [email], references: [email])
 
   guideCategories GuideCategories[]
   listings        Listing[]
   bookings        Booking[]
   reviews         Review[]
 
+  user User @relation(fields: [email], references: [email])
+
   @@map("guides")
 }
 
 model Tourist {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  name          String
-  profilePhoto  String?
-  contactNumber String?
-  address       String?
-  country       String?
-  isDeleted     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String   @id @default(uuid())
+  email             String   @unique
+  name              String
+  gender            Gender?
+  languages         String[]
+  profilePhoto      String?
+  contactNumber     String?
+  address           String?
+  country           String?
+  travelPreferences String?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [email], references: [email])
 
