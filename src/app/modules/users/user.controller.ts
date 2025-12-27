@@ -37,8 +37,36 @@ const createTourist = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, userFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const result = await userService.getAllFromDB(filters, options);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Users data fetched successfuly!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const getGuideById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await userService.getGuideById(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Guide retrieval successfully!",
+    data: result,
+  });
+});
+
 export const userController = {
   createAdmin,
   createGuide,
   createTourist,
+  getAllFromDB,
+  getGuideById,
 };

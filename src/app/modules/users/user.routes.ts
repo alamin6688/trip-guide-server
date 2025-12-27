@@ -7,9 +7,17 @@ import { userValidation } from "./user.validation";
 
 const router = express.Router();
 
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.getAllFromDB
+);
+
+router.get("/guide/:id", userController.getGuideById);
+
 router.post(
   "/create-admin",
-  //   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createAdmin.parse(JSON.parse(req.body.data));
@@ -19,7 +27,7 @@ router.post(
 
 router.post(
   "/create-guide",
-  //   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE),
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createGuide.parse(JSON.parse(req.body.data));
@@ -29,7 +37,6 @@ router.post(
 
 router.post(
   "/create-tourist",
-  //   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE),
   fileUploader.upload.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = userValidation.createTourist.parse(JSON.parse(req.body.data));
