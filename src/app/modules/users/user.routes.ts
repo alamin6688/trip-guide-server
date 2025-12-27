@@ -15,6 +15,8 @@ router.get(
 
 router.get("/guide/:id", userController.getGuideById);
 
+router.get("/tourist/:id", userController.getTouristById);
+
 router.post(
   "/create-admin",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),

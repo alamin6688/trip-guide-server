@@ -237,10 +237,42 @@ const getGuideById = async (id: string) => {
   return result;
 };
 
+const getTouristById = async (id: string) => {
+  const result = await prisma.tourist.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      gender: true,
+      languages: true,
+      profilePhoto: true,
+      country: true,
+      travelPreferences: true,
+      reviews: {
+        select: {
+          rating: true,
+          comment: true,
+          guide: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return result;
+};
+
 export const userService = {
   createAdmin,
   createGuide,
   createTourist,
   getAllFromDB,
   getGuideById,
+  getTouristById,
 };
