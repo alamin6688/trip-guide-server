@@ -2,13 +2,21 @@ import { Request } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../shared/prisma";
 import { fileUploader } from "../../helper/fileUploader";
-import { Admin, Guide, Prisma, Tourist, UserRole } from "@prisma/client";
+import {
+  Admin,
+  Guide,
+  Prisma,
+  Tourist,
+  UserRole,
+  UserStatus,
+} from "@prisma/client";
 import config from "../../../config";
 import {
   IPaginationOptions,
   paginationHelper,
 } from "../../helper/paginationHelper";
 import { userSearchAbleFields } from "./user.constant";
+import { IAuthUser } from "../../types/common";
 
 const createAdmin = async (req: Request): Promise<Admin> => {
   const file = req.file;
@@ -268,6 +276,55 @@ const getTouristById = async (id: string) => {
   return result;
 };
 
+const updateMyProfie = async (user: IAuthUser, req: Request) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const file = req.file;
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+    req.body.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  let profileInfo;
+
+  if (userInfo.role === UserRole.SUPER_ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body,
+    });
+  } else if (userInfo.role === UserRole.ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body,
+    });
+  } else if (userInfo.role === UserRole.GUIDE) {
+    profileInfo = await prisma.guide.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body,
+    });
+  } else if (userInfo.role === UserRole.TOURIST) {
+    profileInfo = await prisma.tourist.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body,
+    });
+  }
+
+  return { ...profileInfo };
+};
+
 export const userService = {
   createAdmin,
   createGuide,
@@ -275,4 +332,5 @@ export const userService = {
   getAllFromDB,
   getGuideById,
   getTouristById,
+  updateMyProfie,
 };

@@ -5,6 +5,7 @@ import { userFilterableFields } from "./user.constant";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import pick from "../../helper/pick";
+import { IAuthUser } from "../../types/common";
 
 const createAdmin = catchAsync(async (req: Request, res: Response) => {
   const result = await userService.createAdmin(req);
@@ -73,6 +74,21 @@ const getTouristById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateMyProfie = catchAsync(
+  async (req: Request & { user?: IAuthUser }, res: Response) => {
+    const user = req.user;
+
+    const result = await userService.updateMyProfie(user as IAuthUser, req);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "My profile updated!",
+      data: result,
+    });
+  }
+);
+
 export const userController = {
   createAdmin,
   createGuide,
@@ -80,4 +96,5 @@ export const userController = {
   getAllFromDB,
   getGuideById,
   getTouristById,
+  updateMyProfie,
 };
