@@ -1,6 +1,7 @@
 model Listing {
-  id      String @id @default(uuid())
-  guideId String
+  id         String @id @default(uuid())
+  guideId    String
+  categoryId String
 
   title         String
   description   String
@@ -9,13 +10,16 @@ model Listing {
   durationHours Int
   meetingPoint  String
   maxGroupSize  Int
-  images        String[]
   city          String
-  isActive      Boolean  @default(true)
-  isDeleted     Boolean  @default(false)
+  languages     String[]
+  images        String[]
 
-  guide    Guide     @relation(fields: [guideId], references: [id])
-  bookings Booking[]
+  isActive  Boolean @default(true)
+  isDeleted Boolean @default(false)
+
+  guide      Guide     @relation(fields: [guideId], references: [id])
+  categories Category  @relation(fields: [categoryId], references: [id])
+  bookings   Booking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

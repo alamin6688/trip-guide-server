@@ -5,10 +5,12 @@ import { ListingController } from "./listings.controller";
 
 const router = Router();
 
-router.post(
+router.get(
   "/",
-  auth(UserRole.GUIDE),
-  ListingController.createListing
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE, UserRole.TOURIST),
+  ListingController.getAllFromDB
 );
+
+router.post("/", auth(UserRole.GUIDE), ListingController.createListing);
 
 export const ListingRoutes = router;

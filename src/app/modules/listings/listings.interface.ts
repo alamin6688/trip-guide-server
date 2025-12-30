@@ -18,4 +18,5 @@ export type createListingInput = {
   maxGroupSize: number;
   images?: string[];
   city: string;
+  categoryId: string;
 };
