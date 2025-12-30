@@ -15,6 +15,10 @@ const loginUser = async (payload: { email: string; password: string }) => {
       email: payload.email,
       status: UserStatus.ACTIVE,
     },
+    include: {
+      guide: true,
+      tourist: true,
+    },
   });
 
   const isCorrectPassword: boolean = await bcrypt.compare(
@@ -29,6 +33,8 @@ const loginUser = async (payload: { email: string; password: string }) => {
     {
       email: userData.email,
       role: userData.role,
+      guideId: userData.guide?.id,
+      touristId: userData.tourist?.id,
     },
     config.jwt.access_token_secret as Secret,
     config.jwt.access_token_expires_in as string
@@ -38,6 +44,8 @@ const loginUser = async (payload: { email: string; password: string }) => {
     {
       email: userData.email,
       role: userData.role,
+      guideId: userData.guide?.id,
+      touristId: userData.tourist?.id,
     },
     config.jwt.refresh_token_secret as Secret,
     config.jwt.refresh_token_expires_in as string
@@ -66,12 +74,18 @@ const refreshToken = async (token: string) => {
       email: decodedData.email,
       status: UserStatus.ACTIVE,
     },
+    include: {
+      guide: true,
+      tourist: true,
+    },
   });
 
   const accessToken = jwtHelper.generateToken(
     {
       email: userData.email,
       role: userData.role,
+      guideId: userData.guide?.id,
+      touristId: userData.tourist?.id,
     },
     config.jwt.access_token_secret as Secret,
     config.jwt.access_token_expires_in as string
@@ -81,6 +95,8 @@ const refreshToken = async (token: string) => {
     {
       email: userData.email,
       role: userData.role,
+      guideId: userData.guide?.id,
+      touristId: userData.tourist?.id,
     },
     config.jwt.refresh_token_secret as Secret,
     config.jwt.refresh_token_expires_in as string
