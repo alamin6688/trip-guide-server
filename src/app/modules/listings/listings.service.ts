@@ -7,7 +7,7 @@ import {
   IPaginationOptions,
   paginationHelper,
 } from "../../helper/paginationHelper";
-import { createListingInput } from "./listings.interface";
+import { createListingInput, updateListingInput } from "./listings.interface";
 
 const createListing = async (
   user: NonNullable<IAuthUser>,
@@ -115,6 +115,74 @@ const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
   };
 };
 
+const updateListing = async (
+  user: NonNullable<IAuthUser>,
+  id: string,
+  payload: updateListingInput
+): Promise<Listing> => {
+  //  Check if listing exists and belongs to the guide
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: { bookings: true },
+  });
+
+  if (!listing) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Listing not found");
+  }
+
+  if (listing.guideId !== user.guideId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You can only update your own listings"
+    );
+  }
+
+  // Optional: Prevent update if there are active bookings
+  if (listing.bookings.length > 0) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "Cannot update listing with active bookings"
+    );
+  }
+
+  // Category permission check if categoryId is updated
+  if (payload.categoryId) {
+    const validCategory = await prisma.guideCategories.findFirst({
+      where: {
+        guideId: user.guideId,
+        categoryId: payload.categoryId,
+      },
+    });
+
+    if (!validCategory) {
+      throw new ApiError(
+        httpStatus.FORBIDDEN,
+        "You are not allowed to assign this category"
+      );
+    }
+  }
+
+  // Update listing
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      title: payload.title,
+      description: payload.description,
+      itinerary: payload.itinerary,
+      price: payload.price,
+      durationHours: payload.durationHours,
+      meetingPoint: payload.meetingPoint,
+      maxGroupSize: payload.maxGroupSize,
+      images: payload.images,
+      city: payload.city,
+      languages: payload.languages,
+      categoryId: payload.categoryId,
+    },
+  });
+
+  return updated;
+};
+
 const deleteListing = async (id: string): Promise<Listing> => {
   // Check if listing exists
   const listing = await prisma.listing.findUnique({
@@ -147,5 +215,6 @@ const deleteListing = async (id: string): Promise<Listing> => {
 export const ListingService = {
   createListing,
   getAllFromDB,
+  updateListing,
   deleteListing,
 };
