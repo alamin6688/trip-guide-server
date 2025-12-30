@@ -13,4 +13,6 @@ router.get(
 
 router.post("/", auth(UserRole.GUIDE), ListingController.createListing);
 
+router.delete("/:id", auth(UserRole.GUIDE), ListingController.deleteListing);
+
 export const ListingRoutes = router;

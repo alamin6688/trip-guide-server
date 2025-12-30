@@ -99,6 +99,7 @@ const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
         : { createdAt: "desc" },
     include: {
       bookings: true,
+      categories: true,
     },
   });
 
@@ -114,7 +115,37 @@ const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
   };
 };
 
+const deleteListing = async (id: string): Promise<Listing> => {
+  // Check if listing exists
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: { bookings: true }, // include bookings to check
+  });
+
+  if (!listing) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Listing not found");
+  }
+
+  // Prevent deletion if there are any bookings
+  if (listing.bookings.length > 0) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "Cannot delete listing with active bookings"
+    );
+  }
+
+  // Delete listing
+  const result = await prisma.listing.delete({
+    where: {
+      id,
+    },
+  });
+
+  return result;
+};
+
 export const ListingService = {
   createListing,
   getAllFromDB,
+  deleteListing,
 };
