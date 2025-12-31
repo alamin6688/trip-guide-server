@@ -18,7 +18,8 @@ enum Gender {
 
 enum BookingStatus {
     PENDING
-    CONFIRMED
+    ACCEPTED
+    REJECTED
     COMPLETED
     CANCELED
 }

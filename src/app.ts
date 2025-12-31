@@ -6,7 +6,9 @@ import config from "./config";
 import router from "./app/routes";
 import cookieParser from "cookie-parser";
 // import { PaymentController } from "./app/modules/payment/payment.controller";
+import { BookingService } from "./app/modules/bookings/booking.service";
 import cron from "node-cron";
+import { prisma } from "./app/shared/prisma";
 
 const app: Application = express();
 
@@ -28,11 +30,19 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-cron.schedule("* * * * *", () => {
+// Run every minute
+cron.schedule("* * * * *", async () => {
   try {
-    console.log("Node cron called at ", new Date());
+    await prisma.$transaction(async (tx) => {
+      console.log("Node cron called at ", new Date());
+      // Handle payment webhooks / pending payments
+      // await PaymentService.processPendingPayments(tx);
+
+      // Auto-complete bookings (only ACCEPTED + PAID)
+      await BookingService.autoCompleteBookings(tx);
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Cron job error:", err);
   }
 });
 
