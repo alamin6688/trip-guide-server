@@ -36,7 +36,27 @@ const updateBookingStatus = catchAsync(
   }
 );
 
+const initiatePayment = catchAsync(
+  async (req: Request & { user?: IAuthUser }, res: Response) => {
+    const user = req.user!;
+    const { id } = req.params;
+
+    const result = await BookingService.initiateStripePaymentForBooking(
+      id,
+      user
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Payment session created successfully",
+      data: result,
+    });
+  }
+);
+
 export const BookingController = {
   createBooking,
   updateBookingStatus,
+  initiatePayment,
 };

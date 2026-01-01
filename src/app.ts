@@ -5,22 +5,23 @@ import notFound from "./app/middlewares/notFound";
 import config from "./config";
 import router from "./app/routes";
 import cookieParser from "cookie-parser";
-// import { PaymentController } from "./app/modules/payment/payment.controller";
 import { BookingService } from "./app/modules/bookings/booking.service";
 import cron from "node-cron";
 import { prisma } from "./app/shared/prisma";
+import { PaymentController } from "./app/modules/payment/payment.controller";
+import { PaymentService } from "./app/modules/payment/payment.service";
 
 const app: Application = express();
 
 app.post(
   "/webhook",
-  express.raw({ type: "application/json" })
-  // PaymentController.handleStripeWebhookEvent
+  express.raw({ type: "application/json" }),
+  PaymentController.handleStripeWebhookEvent
 );
 
 app.use(
   cors({
-    origin: "http://localhost:5000",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
@@ -36,7 +37,8 @@ cron.schedule("* * * * *", async () => {
     await prisma.$transaction(async (tx) => {
       console.log("Node cron called at ", new Date());
       // Handle payment webhooks / pending payments
-      // await PaymentService.processPendingPayments(tx);
+      // Note: Remove this call if it requires a Stripe Event object that isn't available in cron context
+      // await PaymentService.handleStripeWebhookEvent();
 
       // Auto-complete bookings (only ACCEPTED + PAID)
       await BookingService.autoCompleteBookings(tx);

@@ -4,9 +4,10 @@ model Booking {
     touristId String
     guideId   String
 
-    status    BookingStatus @default(PENDING)
-    startDate DateTime
-    endDate   DateTime?
+    status        BookingStatus @default(PENDING)
+    paymentStatus PaymentStatus @default(UNPAID)
+    startDate     DateTime
+    endDate       DateTime?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

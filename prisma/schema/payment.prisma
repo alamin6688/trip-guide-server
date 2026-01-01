@@ -1,0 +1,17 @@
+model Payment {
+    id        String  @id @default(uuid())
+    bookingId String  @unique
+    booking   Booking @relation(fields: [bookingId], references: [id])
+
+    amount             Float
+    currency           String        @default("USD")
+    transactionId      String        @unique
+    status             PaymentStatus @default(UNPAID)
+    paymentGatewayData Json?
+    stripeEventId      String?       @unique // For webhook idempotency
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("payments")
+}

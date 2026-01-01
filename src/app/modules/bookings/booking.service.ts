@@ -1,8 +1,9 @@
-import { BookingStatus, Prisma } from "@prisma/client";
+import { BookingStatus, PaymentStatus, Prisma } from "@prisma/client";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
 import { IAuthUser } from "../../types/common";
 import httpStatus from "http-status";
+import { stripe } from "../../helper/stripe";
 
 const createBooking = async (
   user: NonNullable<IAuthUser>,
@@ -151,7 +152,7 @@ const autoCompleteBookings = async (tx: Prisma.TransactionClient) => {
     where: {
       status: BookingStatus.ACCEPTED,
       endDate: { lt: now },
-      payment: { status: "PAID" }, // Only paid bookings
+      payment: { is: { status: PaymentStatus.PAID } }, // Only paid bookings
     },
     data: {
       status: BookingStatus.COMPLETED,
@@ -159,8 +160,86 @@ const autoCompleteBookings = async (tx: Prisma.TransactionClient) => {
   });
 };
 
+const initiateStripePaymentForBooking = async (
+  bookingId: string,
+  user: NonNullable<IAuthUser>
+) => {
+  if (!user.touristId) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Only tourists can pay");
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      payment: true,
+      listing: true,
+    },
+  });
+
+  if (!booking || booking.touristId !== user.touristId) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Booking not found");
+  }
+
+  if (booking.status !== BookingStatus.ACCEPTED) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Only ACCEPTED bookings can be paid"
+    );
+  }
+
+  if (booking.payment?.status === PaymentStatus.PAID) {
+    throw new ApiError(httpStatus.CONFLICT, "Booking already paid");
+  }
+
+  // Create payment record if not exists
+  const payment =
+    booking.payment ??
+    (await prisma.payment.create({
+      data: {
+        bookingId: booking.id,
+        amount: booking.listing.price,
+        currency: "USD",
+        status: PaymentStatus.PENDING,
+        transactionId: `TXN_${booking.id}_${Date.now()}`,
+      },
+    }));
+
+  // Stripe checkout session
+  // console.log("Creating Stripe session for booking", bookingId);
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    customer_email: user.email,
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: booking.listing.title,
+            description: `Guided tour in ${booking.listing.city}`,
+          },
+          unit_amount: Math.round(payment.amount * 100),
+        },
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      bookingId: booking.id,
+      paymentId: payment.id,
+    },
+    // success_url: `${process.env.FRONTEND_URL}/payment/success`,
+    // cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+    success_url: `https://www.programming-hero.com`,
+    cancel_url: `https://next.programming-hero.com`,
+  });
+  // console.log("Stripe session created:", session.id, session.url);
+
+  return { paymentUrl: session.url };
+};
+
 export const BookingService = {
   createBooking,
   updateBookingStatus,
   autoCompleteBookings,
+  initiateStripePaymentForBooking,
 };
