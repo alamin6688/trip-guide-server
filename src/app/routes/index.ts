@@ -5,6 +5,7 @@ import { ListingRoutes } from "../modules/listings/listings.routes";
 import { BookingRoutes } from "../modules/bookings/booking.route";
 import { ReviewRoutes } from "../modules/review/review.route";
 import { AdminRoutes } from "../modules/admin/admin.route";
+import { MetaRoutes } from "../modules/meta/meta.route";
 
 const router = express.Router();
 
@@ -33,11 +34,10 @@ const moduleRoutes = [
     path: "/review",
     route: ReviewRoutes,
   },
-
-  //   {
-  //     path: "/metadata",
-  //     route: MetaRoutes,
-  //   },
+  {
+    path: "/metadata",
+    route: MetaRoutes,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
