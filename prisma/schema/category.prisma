@@ -1,6 +1,6 @@
 model Category {
-    id    String       @id @default(uuid())
-    title TourCategory
+    id    String @id @default(uuid())
+    title String
     icon  String
 
     guideCategories GuideCategories[]
@@ -13,8 +13,8 @@ model GuideCategories {
     categoryId String
     guideId    String
 
-    guide      Guide    @relation(fields: [guideId], references: [id])
-    categories Category @relation(fields: [categoryId], references: [id])
+    guide    Guide    @relation(fields: [guideId], references: [id])
+    category Category @relation(fields: [categoryId], references: [id])
 
     @@id([categoryId, guideId])
     @@map("guide_categories")

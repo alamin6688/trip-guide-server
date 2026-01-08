@@ -1,9 +1,53 @@
-import { BookingStatus, PaymentStatus, Prisma } from "@prisma/client";
+import {
+  BookingStatus,
+  PaymentStatus,
+  Prisma,
+  PrismaClient,
+} from "@prisma/client";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../shared/prisma";
 import { IAuthUser } from "../../types/common";
 import httpStatus from "http-status";
 import { stripe } from "../../helper/stripe";
+
+const getMyBookings = async (user: NonNullable<IAuthUser>) => {
+  if (!user.touristId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "Only tourists can view their bookings"
+    );
+  }
+
+  return prisma.booking.findMany({
+    where: {
+      touristId: user.touristId, // 🔐 user only sees own bookings
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      listing: {
+        select: {
+          title: true,
+          city: true,
+          price: true,
+        },
+      },
+      guide: {
+        select: {
+          name: true,
+        },
+      },
+      payment: true,
+    },
+  });
+};
+
+const getGuideBookings = async (guideId: string) => {
+  return prisma.booking.findMany({
+    where: { guideId },
+    include: { tourist: true, payment: true },
+    orderBy: { createdAt: "desc" },
+  });
+};
 
 const createBooking = async (
   user: NonNullable<IAuthUser>,
@@ -65,7 +109,7 @@ const createBooking = async (
   const overlappingBooking = await prisma.booking.findFirst({
     where: {
       guideId: listing.guideId,
-      status: BookingStatus.ACCEPTED,
+      status: BookingStatus.PENDING,
       startDate: { lt: end ?? start },
       endDate: { gt: start },
     },
@@ -86,6 +130,9 @@ const createBooking = async (
       startDate: start, // stored in UTC
       endDate: end,
       status: BookingStatus.PENDING,
+    },
+    include: {
+      review: true,
     },
   });
 };
@@ -145,19 +192,55 @@ const updateBookingStatus = async (
  * Auto-complete bookings whose endDate is past and are ACCEPTED and PAID
  * Call via node cron (e.g., every hour or minute)
  */
-const autoCompleteBookings = async (tx: Prisma.TransactionClient) => {
+// const autoCompleteBookings = async (tx: Prisma.TransactionClient) => {
+//   const now = new Date();
+
+//   await tx.booking.updateMany({
+//     where: {
+//       status: BookingStatus.ACCEPTED,
+//       endDate: { lt: now },
+//       payment: { is: { status: PaymentStatus.PAID } },
+//     },
+//     data: {
+//       status: BookingStatus.COMPLETED,
+//     },
+//   });
+// };
+
+export const autoCompleteBookings = async (tx: Prisma.TransactionClient) => {
   const now = new Date();
+  now.setHours(23, 59, 59, 999);
+
+  console.log("🔁 Auto-complete check at:", now);
+
+  const bookings = await tx.booking.findMany({
+    where: {
+      status: BookingStatus.ACCEPTED,
+      paymentStatus: PaymentStatus.PAID,
+      endDate: {
+        lt: now,
+      },
+    },
+    select: {
+      id: true,
+      endDate: true,
+    },
+  });
+
+  console.log("📦 Eligible bookings:", bookings);
+
+  if (bookings.length === 0) return;
 
   await tx.booking.updateMany({
     where: {
-      status: BookingStatus.ACCEPTED,
-      endDate: { lt: now },
-      payment: { is: { status: PaymentStatus.PAID } }, // Only paid bookings
+      id: { in: bookings.map((b) => b.id) },
     },
     data: {
       status: BookingStatus.COMPLETED,
     },
   });
+
+  console.log(`✅ Auto-completed ${bookings.length} bookings`);
 };
 
 const initiateStripePaymentForBooking = async (
@@ -229,7 +312,9 @@ const initiateStripePaymentForBooking = async (
     },
     // success_url: `${process.env.FRONTEND_URL}/payment/success`,
     // cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
-    success_url: `https://www.programming-hero.com`,
+    // success_url: `https://www.programming-hero.com`,
+    // cancel_url: `https://next.programming-hero.com`,
+    success_url: `http://localhost:3000`,
     cancel_url: `https://next.programming-hero.com`,
   });
   // console.log("Stripe session created:", session.id, session.url);
@@ -238,6 +323,8 @@ const initiateStripePaymentForBooking = async (
 };
 
 export const BookingService = {
+  getMyBookings,
+  getGuideBookings,
   createBooking,
   updateBookingStatus,
   autoCompleteBookings,

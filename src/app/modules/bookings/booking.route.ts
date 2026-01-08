@@ -5,6 +5,10 @@ import { BookingController } from "./booking.controller";
 
 const router = express.Router();
 
+router.get("/my", auth(UserRole.TOURIST), BookingController.getMyBookings);
+
+router.get("/", auth(UserRole.GUIDE), BookingController.getGuideBookings);
+
 router.post("/", auth(UserRole.TOURIST), BookingController.createBooking);
 
 router.patch(

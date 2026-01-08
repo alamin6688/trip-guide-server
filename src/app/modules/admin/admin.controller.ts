@@ -22,6 +22,22 @@ const getAllFromDB: RequestHandler = catchAsync(
   }
 );
 
+const getGuideCategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await AdminService.getGuideCategories();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Guide categories fetched successfully!",
+    data: result,
+  });
+});
+
+const createGuideCategories = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+  }
+);
+
 const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -72,6 +88,8 @@ const softDeleteFromDB = catchAsync(async (req: Request, res: Response) => {
 
 export const AdminController = {
   getAllFromDB,
+  getGuideCategories,
+  createGuideCategories,
   getByIdFromDB,
   updateIntoDB,
   deleteFromDB,

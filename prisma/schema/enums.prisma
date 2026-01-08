@@ -31,11 +31,11 @@ enum PaymentStatus {
     REFUNDED
 }
 
-enum TourCategory {
-    FOOD
-    CULTURE
-    ADVENTURE
-    ART
-    NIGHTLIFE
-    HISTORY
-}
+// enum TourCategory {
+//     FOOD
+//     CULTURE
+//     ADVENTURE
+//     ART
+//     NIGHTLIFE
+//     HISTORY
+// }

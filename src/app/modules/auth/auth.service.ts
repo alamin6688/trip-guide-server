@@ -372,7 +372,7 @@ const getMe = async (user: any) => {
           updatedAt: true,
           guideCategories: {
             include: {
-              categories: true,
+              category: true,
             },
           },
           listings: {

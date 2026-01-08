@@ -13,6 +13,12 @@ router.get(
   userController.getAllFromDB
 );
 
+router.get(
+  "/guide",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.getAllGuides
+);
+
 router.get("/guide/:id", userController.getGuideById);
 
 router.get("/tourist/:id", userController.getTouristById);
@@ -54,6 +60,12 @@ router.patch(
     req.body = JSON.parse(req.body.data);
     return userController.updateMyProfie(req, res, next);
   }
+);
+
+router.delete(
+  "/guide/soft/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.deleteFromDB
 );
 
 export const userRoutes = router;

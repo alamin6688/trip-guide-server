@@ -7,6 +7,7 @@ import {
   Guide,
   Prisma,
   Tourist,
+  User,
   UserRole,
   UserStatus,
 } from "@prisma/client";
@@ -202,6 +203,95 @@ const getAllFromDB = async (params: any, options: IPaginationOptions) => {
   };
 };
 
+const getAllGuides = async (params: any, options: IPaginationOptions) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andConditions: Prisma.GuideWhereInput[] = [];
+
+  if (params.searchTerm) {
+    andConditions.push({
+      OR: userSearchAbleFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  const whereConditions: Prisma.GuideWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.guide.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : { createdAt: "desc" },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      languages: true,
+      profilePhoto: true,
+      contactNumber: true,
+      address: true,
+      gender: true,
+      bio: true,
+      city: true,
+      country: true,
+      dailyRate: true,
+      experience: true,
+      averageRating: true,
+      isDeleted: true,
+      createdAt: true,
+      updatedAt: true,
+      guideCategories: {
+        select: {
+          categoryId: true,
+          guideId: true,
+          category: {
+            select: {
+              id: true,
+              title: true,
+              icon: true,
+            },
+          },
+        },
+      },
+      listings: true,
+      bookings: true,
+      reviews: true,
+    },
+  });
+
+  const total = await prisma.guide.count({
+    where: whereConditions,
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
 const getGuideById = async (id: string) => {
   const result = await prisma.guide.findFirst({
     where: {
@@ -325,12 +415,40 @@ const updateMyProfie = async (user: IAuthUser, req: Request) => {
   return { ...profileInfo };
 };
 
+const deleteFromDB = async (id: string): Promise<Guide | null> => {
+  await prisma.guide.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const guideDeletedData = await transactionClient.guide.delete({
+      where: {
+        id,
+      },
+    });
+
+    await transactionClient.user.delete({
+      where: {
+        email: guideDeletedData.email,
+      },
+    });
+
+    return guideDeletedData;
+  });
+
+  return result;
+};
+
 export const userService = {
   createAdmin,
   createGuide,
   createTourist,
   getAllFromDB,
+  getAllGuides,
   getGuideById,
   getTouristById,
   updateMyProfie,
+  deleteFromDB,
 };

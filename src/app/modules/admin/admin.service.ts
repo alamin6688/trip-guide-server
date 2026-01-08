@@ -72,6 +72,23 @@ const getAllFromDB = async (
   };
 };
 
+const getGuideCategories = async (): Promise<string[]> => {
+  const categories = await prisma.listing.findMany({
+    include: {
+      categories: {
+
+        select: {
+          id: true,
+          title: true, 
+          icon: true,
+        },
+      }
+    },
+  });
+
+  return categories.map((category) => category.title);
+};
+
 const getByIdFromDB = async (id: string): Promise<Admin | null> => {
   const result = await prisma.admin.findUnique({
     where: {
@@ -165,6 +182,7 @@ const softDeleteFromDB = async (id: string): Promise<Admin | null> => {
 
 export const AdminService = {
   getAllFromDB,
+  getGuideCategories,
   getByIdFromDB,
   updateIntoDB,
   deleteFromDB,

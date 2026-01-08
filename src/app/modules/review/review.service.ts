@@ -73,6 +73,11 @@ const createReview = async (
       // comment: payload.comment || null,
       ...(payload.comment?.trim() && { comment: payload.comment }),
     },
+    include: {
+      guide: true,
+      tourist: true,
+      booking: true,
+    },
   });
 };
 

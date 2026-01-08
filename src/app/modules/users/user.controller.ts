@@ -52,6 +52,20 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllGuides = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, userFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const result = await userService.getAllGuides(filters, options);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Guides retrieval successfully!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 const getGuideById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await userService.getGuideById(id);
@@ -83,18 +97,32 @@ const updateMyProfie = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "My profile updated!",
+      message: "Profile updated!",
       data: result,
     });
   }
 );
 
+const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await userService.deleteFromDB(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User data deleted!",
+    data: result,
+  });
+});
+
 export const userController = {
   createAdmin,
   createGuide,
   createTourist,
+  getAllGuides,
   getAllFromDB,
   getGuideById,
   getTouristById,
   updateMyProfie,
+  deleteFromDB,
 };

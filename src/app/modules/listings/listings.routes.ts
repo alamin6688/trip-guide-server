@@ -7,7 +7,7 @@ const router = Router();
 
 router.get(
   "/",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE, UserRole.TOURIST),
+  // auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE, UserRole.TOURIST),
   ListingController.getAllFromDB
 );
 

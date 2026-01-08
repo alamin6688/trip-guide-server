@@ -14,6 +14,18 @@ router.get(
 );
 
 router.get(
+  "/guide-categories",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  AdminController.getGuideCategories
+);
+
+// router.post(
+//   "/guide-categories",
+//   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+//   AdminController.createGuideCategories
+// );
+
+router.get(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   AdminController.getByIdFromDB

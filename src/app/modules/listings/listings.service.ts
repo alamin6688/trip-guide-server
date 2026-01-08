@@ -22,7 +22,7 @@ const createListing = async (
   const validCategory = await prisma.guideCategories.findFirst({
     where: {
       guideId: user.guideId,
-      categoryId: payload.categoryId,
+      // categoryId: payload.categoryId,
     },
   });
 
@@ -98,6 +98,7 @@ const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
         ? { [options.sortBy]: options.sortOrder }
         : { createdAt: "desc" },
     include: {
+      guide:true,
       bookings: true,
       categories: true,
     },
