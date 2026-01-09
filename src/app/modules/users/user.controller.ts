@@ -66,6 +66,20 @@ const getAllGuides = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllTourists = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, userFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const result = await userService.getAllTourists(filters, options);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Tourists retrieval successfully!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 const getGuideById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await userService.getGuideById(id);
@@ -115,14 +129,29 @@ const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteTouristFromDB = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await userService.deleteTouristFromDB(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Tourist data deleted!",
+    data: result,
+  });
+});
+
 export const userController = {
   createAdmin,
   createGuide,
   createTourist,
   getAllGuides,
+  getAllTourists,
   getAllFromDB,
   getGuideById,
   getTouristById,
   updateMyProfie,
   deleteFromDB,
+  deleteTouristFromDB,
 };

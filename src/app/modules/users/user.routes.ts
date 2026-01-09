@@ -19,6 +19,12 @@ router.get(
   userController.getAllGuides
 );
 
+router.get(
+  "/tourist",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.getAllTourists
+);
+
 router.get("/guide/:id", userController.getGuideById);
 
 router.get("/tourist/:id", userController.getTouristById);
@@ -66,6 +72,12 @@ router.delete(
   "/guide/soft/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   userController.deleteFromDB
+);
+
+router.delete(
+  "/tourist/soft/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.deleteTouristFromDB
 );
 
 export const userRoutes = router;
