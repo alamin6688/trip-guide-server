@@ -18,8 +18,9 @@ export type createListingInput = {
   durationHours: number;
   meetingPoint: string;
   maxGroupSize: number;
-  images?: string[];
   city: string;
+  images: string;
+  languages: string[];
   categoryId: string;
 };
 
@@ -31,8 +32,8 @@ export type updateListingInput = {
   durationHours?: number;
   meetingPoint?: string;
   maxGroupSize?: number;
-  images?: string[];
   city?: string;
+  images?: string;
   languages?: string[];
   categoryId?: string;
 };

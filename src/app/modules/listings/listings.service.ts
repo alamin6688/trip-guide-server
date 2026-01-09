@@ -26,12 +26,13 @@ const createListing = async (
     },
   });
 
-  if (!validCategory) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      "You are not allowed to create listings in this category"
-    );
-  }
+  // if (!validCategory) {
+  //   console.log(validCategory,"user.guideId");
+  //   throw new ApiError(
+  //     httpStatus.FORBIDDEN,
+  //     "You are not allowed to create listings in this category"
+  //   );
+  // }
 
   //  Duplicate prevention
   const existingListing = await prisma.listing.findFirst({
@@ -63,7 +64,8 @@ const createListing = async (
       durationHours: payload.durationHours,
       meetingPoint: payload.meetingPoint,
       maxGroupSize: payload.maxGroupSize,
-      images: payload.images ?? [],
+      images: payload.images,
+      languages: payload.languages,
       city: payload.city,
     },
   });

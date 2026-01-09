@@ -15,6 +15,6 @@ router.post("/", auth(UserRole.GUIDE), ListingController.createListing);
 
 router.patch("/:id", auth(UserRole.GUIDE), ListingController.updateListing);
 
-router.delete("/:id", auth(UserRole.GUIDE), ListingController.deleteListing);
+router.delete("/:id", auth(UserRole.GUIDE, UserRole.ADMIN), ListingController.deleteListing);
 
 export const ListingRoutes = router;

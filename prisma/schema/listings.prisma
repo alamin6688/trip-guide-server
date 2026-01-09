@@ -12,7 +12,7 @@ model Listing {
   maxGroupSize  Int
   city          String
   languages     String[]
-  images        String[]
+  images        String
 
   isActive  Boolean @default(true)
   isDeleted Boolean @default(false)
