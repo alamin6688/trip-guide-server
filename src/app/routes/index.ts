@@ -19,6 +19,7 @@ const moduleRoutes = [
     path: "/admin",
     route: AdminRoutes,
   },
+  // test comment
   {
     path: "/auth",
     route: authRoutes,
