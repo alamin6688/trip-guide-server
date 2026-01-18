@@ -11,7 +11,9 @@ router.get(
   ListingController.getAllFromDB
 );
 
-router.post("/", auth(UserRole.GUIDE), ListingController.createListing);
+router.post("/", 
+  // auth(UserRole.GUIDE), 
+ListingController.createListing);
 
 router.patch("/:id", auth(UserRole.GUIDE), ListingController.updateListing);
 

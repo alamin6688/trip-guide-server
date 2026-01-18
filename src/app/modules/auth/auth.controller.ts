@@ -59,12 +59,14 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     sameSite: "none",
     maxAge: accessTokenMaxAge,
+    path: "/",
   });
   res.cookie("refreshToken", refreshToken, {
     secure: true,
     httpOnly: true,
     sameSite: "none",
     maxAge: refreshTokenMaxAge,
+    path: "/",
   });
 
   sendResponse(res, {
@@ -203,9 +205,10 @@ const resetPassword = catchAsync(
 
 const getMe = catchAsync(
   async (req: Request & { user?: any }, res: Response) => {
-    const user = req.cookies;
+    // const user = req.cookies;
+    // const result = await AuthServices.getMe(user);
 
-    const result = await AuthServices.getMe(user);
+      const result = await AuthServices.getMe(req.user);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,

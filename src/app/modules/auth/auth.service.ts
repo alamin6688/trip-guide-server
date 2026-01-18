@@ -319,16 +319,97 @@ const resetPassword = async (
   });
 };
 
-const getMe = async (user: any) => {
-  const accessToken = user.accessToken;
-  const decodedData = jwtHelper.verifyToken(
-    accessToken,
-    config.jwt.access_token_secret as Secret
-  );
+// const getMe = async (user: any) => {
+//   const accessToken = user.accessToken;
+//   const decodedData = jwtHelper.verifyToken(
+//     accessToken,
+//     config.jwt.access_token_secret as Secret
+//   );
 
+//   const userData = await prisma.user.findUniqueOrThrow({
+//     where: {
+//       email: decodedData.email,
+//       status: UserStatus.ACTIVE,
+//     },
+//     select: {
+//       id: true,
+//       email: true,
+//       role: true,
+//       needPasswordChange: true,
+//       status: true,
+//       createdAt: true,
+//       updatedAt: true,
+//       admin: {
+//         select: {
+//           id: true,
+//           email: true,
+//           name: true,
+//           profilePhoto: true,
+//           contactNumber: true,
+//           isDeleted: true,
+//           createdAt: true,
+//           updatedAt: true,
+//         },
+//       },
+//       guide: {
+//         select: {
+//           id: true,
+//           name: true,
+//           email: true,
+//           languages: true,
+//           profilePhoto: true,
+//           contactNumber: true,
+//           address: true,
+//           gender: true,
+//           bio: true,
+//           city: true,
+//           country: true,
+//           dailyRate: true,
+//           experience: true,
+//           averageRating: true,
+//           isDeleted: true,
+//           createdAt: true,
+//           updatedAt: true,
+//           guideCategories: {
+//             include: {
+//               category: true,
+//             },
+//           },
+//           listings: {
+//             include: {
+//               guide: true,
+//             },
+//           },
+//         },
+//       },
+//       tourist: {
+//         select: {
+//           id: true,
+//           name: true,
+//           email: true,
+//           gender: true,
+//           languages: true,
+//           profilePhoto: true,
+//           contactNumber: true,
+//           address: true,
+//           country: true,
+//           travelPreferences: true,
+//           isDeleted: true,
+//           createdAt: true,
+//           updatedAt: true,
+//         },
+//       },
+//     },
+//   });
+
+//   return userData;
+// };
+
+
+const getMe = async (user: any) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
-      email: decodedData.email,
+      email: user.email,
       status: UserStatus.ACTIVE,
     },
     select: {
@@ -339,6 +420,7 @@ const getMe = async (user: any) => {
       status: true,
       createdAt: true,
       updatedAt: true,
+
       admin: {
         select: {
           id: true,
@@ -351,6 +433,7 @@ const getMe = async (user: any) => {
           updatedAt: true,
         },
       },
+
       guide: {
         select: {
           id: true,
@@ -382,6 +465,7 @@ const getMe = async (user: any) => {
           },
         },
       },
+
       tourist: {
         select: {
           id: true,
@@ -404,6 +488,7 @@ const getMe = async (user: any) => {
 
   return userData;
 };
+
 
 export const AuthServices = {
   loginUser,

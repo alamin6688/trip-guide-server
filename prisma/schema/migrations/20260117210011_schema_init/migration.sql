@@ -8,22 +8,21 @@ CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'BLOCKED', 'DELETED');
 CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE');
 
 -- CreateEnum
-CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELED');
+CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'COMPLETED', 'CANCELED');
 
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('PAID', 'UNPAID', 'REFUNDED');
-
--- CreateEnum
-CREATE TYPE "TourCategory" AS ENUM ('FOOD', 'CULTURE', 'ADVENTURE', 'ART', 'NIGHTLIFE', 'HISTORY');
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID', 'UNPAID', 'REFUNDED');
 
 -- CreateTable
 CREATE TABLE "bookings" (
     "id" TEXT NOT NULL,
+    "listingId" TEXT NOT NULL,
     "touristId" TEXT NOT NULL,
     "guideId" TEXT NOT NULL,
-    "listingId" TEXT NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
     "status" "BookingStatus" NOT NULL DEFAULT 'PENDING',
+    "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'UNPAID',
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -33,7 +32,7 @@ CREATE TABLE "bookings" (
 -- CreateTable
 CREATE TABLE "categories" (
     "id" TEXT NOT NULL,
-    "title" "TourCategory" NOT NULL,
+    "title" TEXT NOT NULL,
     "icon" TEXT NOT NULL,
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
@@ -61,7 +60,7 @@ CREATE TABLE "listings" (
     "maxGroupSize" INTEGER NOT NULL,
     "city" TEXT NOT NULL,
     "languages" TEXT[],
-    "images" TEXT[],
+    "images" TEXT NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,8 +74,11 @@ CREATE TABLE "payments" (
     "id" TEXT NOT NULL,
     "bookingId" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
     "transactionId" TEXT NOT NULL,
-    "status" "PaymentStatus" NOT NULL,
+    "status" "PaymentStatus" NOT NULL DEFAULT 'UNPAID',
+    "paymentGatewayData" JSONB,
+    "stripeEventId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -90,7 +92,7 @@ CREATE TABLE "reviews" (
     "guideId" TEXT NOT NULL,
     "touristId" TEXT NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "comment" TEXT NOT NULL,
+    "comment" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -174,6 +176,9 @@ CREATE UNIQUE INDEX "payments_bookingId_key" ON "payments"("bookingId");
 CREATE UNIQUE INDEX "payments_transactionId_key" ON "payments"("transactionId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "payments_stripeEventId_key" ON "payments"("stripeEventId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "reviews_bookingId_key" ON "reviews"("bookingId");
 
 -- CreateIndex
@@ -189,13 +194,13 @@ CREATE UNIQUE INDEX "guides_email_key" ON "guides"("email");
 CREATE UNIQUE INDEX "tourists_email_key" ON "tourists"("email");
 
 -- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_listingId_fkey" FOREIGN KEY ("listingId") REFERENCES "listings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_touristId_fkey" FOREIGN KEY ("touristId") REFERENCES "tourists"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_guideId_fkey" FOREIGN KEY ("guideId") REFERENCES "guides"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "bookings" ADD CONSTRAINT "bookings_listingId_fkey" FOREIGN KEY ("listingId") REFERENCES "listings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "guide_categories" ADD CONSTRAINT "guide_categories_guideId_fkey" FOREIGN KEY ("guideId") REFERENCES "guides"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

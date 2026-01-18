@@ -24,7 +24,7 @@ router.post("/forgot-password", AuthController.forgotPassword);
 router.post(
   "/reset-password",
   (req: Request, res: Response, next: NextFunction) => {
-    //user is resetting password without token and logged in newly created admin 
+    //user is resetting password without token and logged in newly created admin
     if (!req.headers.authorization && req.cookies.accessToken) {
       console.log(req.headers.authorization, "from reset password route guard");
       console.log(req.cookies.accessToken, "from reset password route guard");
@@ -42,6 +42,10 @@ router.post(
   AuthController.resetPassword
 );
 
-router.get("/me", AuthController.getMe);
+router.get(
+  "/me",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.GUIDE, UserRole.TOURIST),
+  AuthController.getMe
+);
 
 export const authRoutes = router;

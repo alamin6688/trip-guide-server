@@ -16,14 +16,14 @@ const app: Application = express();
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  PaymentController.handleStripeWebhookEvent
+  PaymentController.handleStripeWebhookEvent,
 );
 
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://trip-guide-client.vercel.app"],
     credentials: true,
-  })
+  }),
 );
 
 //parser
