@@ -3,6 +3,7 @@ import { jwtHelper } from "../helper/jwtHelper";
 import { env } from "process";
 import ApiError from "../errors/ApiError";
 import httpStatus from "http-status";
+import config from "../../config";
 
 const auth = (...roles: string[]) => {
   return async (
@@ -19,7 +20,7 @@ const auth = (...roles: string[]) => {
 
       const verifyUser = jwtHelper.verifyToken(
         token,
-        env.ACCESS_TOKEN_SECRET as string
+        config.jwt.access_token_secret as string,
       );
 
       req.user = verifyUser;

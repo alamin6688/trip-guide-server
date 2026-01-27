@@ -36,7 +36,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
       guideId: userData.guide?.id,
       touristId: userData.tourist?.id,
     },
-    config.jwt.access_token_secret as Secret,
+    config.jwt.access_token_secret as string,
     config.jwt.access_token_expires_in as string
   );
 
@@ -87,7 +87,7 @@ const refreshToken = async (token: string) => {
       guideId: userData.guide?.id,
       touristId: userData.tourist?.id,
     },
-    config.jwt.access_token_secret as Secret,
+    config.jwt.access_token_secret as string,
     config.jwt.access_token_expires_in as string
   );
 
@@ -255,7 +255,7 @@ const resetPassword = async (
   if (token) {
     const decodedToken = jwtHelper.verifyToken(
       token,
-      config.jwt.access_token_secret as Secret
+      config.jwt.access_token_secret as string
     );
 
     if (!decodedToken) {
