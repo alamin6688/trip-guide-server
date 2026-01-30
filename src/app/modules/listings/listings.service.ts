@@ -78,15 +78,80 @@ const createListing = async (
 
 const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
   const { limit, page, skip } = paginationHelper.calculatePagination(options);
-  const { ...filterData } = filters;
-  const andConditions = [];
+  const { search, minPrice, maxPrice, languages, duration, ...filterData } = filters;
+  const andConditions: Prisma.ListingWhereInput[] = [];
 
-  if (Object.keys(filterData).length > 0) {
+  // Search (Title or City)
+  if (search) {
     andConditions.push({
-      AND: Object.keys(filterData).map((key) => {
+      OR: [
+        { title: { contains: search, mode: "insensitive" as Prisma.QueryMode } },
+        { city: { contains: search, mode: "insensitive" as Prisma.QueryMode } },
+      ],
+    });
+  }
+
+  // Price Range
+  if (minPrice !== undefined) {
+    andConditions.push({ price: { gte: Number(minPrice) } });
+  }
+  if (maxPrice !== undefined) {
+    andConditions.push({ price: { lte: Number(maxPrice) } });
+  }
+
+  // Languages (Overlap)
+  if (languages) {
+    const langs = typeof languages === "string" ? languages.split(",") : languages;
+    if (langs.length > 0) {
+      andConditions.push({ languages: { hasSome: langs } });
+    }
+  }
+
+  // Duration Mapping logic
+  if (duration) {
+    const durationStrings = typeof duration === "string" ? duration.split(",") : Array.isArray(duration) ? duration : [duration];
+    const durationQueries = [];
+
+    for (const d of durationStrings) {
+      if (d === "< 2 hours") {
+        durationQueries.push({ durationHours: { lt: 2 } });
+      } else if (d === "2-4 hours") {
+        durationQueries.push({ AND: [{ durationHours: { gte: 2 } }, { durationHours: { lte: 4 } }] });
+      } else if (d === "Half Day") {
+        durationQueries.push({ AND: [{ durationHours: { gt: 4 } }, { durationHours: { lte: 8 } }] });
+      } else if (d === "Full Day") {
+        durationQueries.push({ durationHours: { gt: 8 } });
+      } else if (!isNaN(Number(d))) {
+        durationQueries.push({ durationHours: { equals: Number(d) } });
+      }
+    }
+
+    if (durationQueries.length > 0) {
+      andConditions.push({ OR: durationQueries });
+    }
+  }
+
+  // Remaining specific filters
+  const { date, ...realFilterData } = filterData; // Exclude date as it's not in schema
+  if (Object.keys(realFilterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(realFilterData).map((key) => {
+        // Special case for categoryId (exact match)
+        if (key === "categoryId") {
+          return { categoryId: { equals: (realFilterData as any)[key] } };
+        }
+        // Special case for category (relation title match)
+        if (key === "category") {
+          return { categories: { title: { equals: (realFilterData as any)[key], mode: "insensitive" as Prisma.QueryMode } } };
+        }
+        // Special case for city (partial match)
+        if (key === "city") {
+          return { city: { contains: (realFilterData as any)[key], mode: "insensitive" as Prisma.QueryMode } };
+        }
+
         return {
           [key]: {
-            equals: (filterData as any)[key],
+            equals: (realFilterData as any)[key],
           },
         };
       }),

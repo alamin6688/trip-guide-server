@@ -22,7 +22,16 @@ const createListing = catchAsync(
 );
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, ["city"]);
+  const filters = pick(req.query, [
+    "city",
+    "search",
+    "minPrice",
+    "maxPrice",
+    "categoryId",
+    "duration",
+    "languages",
+    "category",
+  ]);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
 
   const result = await ListingService.getAllFromDB(filters, options);
