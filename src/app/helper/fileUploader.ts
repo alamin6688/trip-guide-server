@@ -1,11 +1,13 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+import os from "os";
 import { v2 as cloudinary } from "cloudinary";
 import config from "../../config";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), "/uploads"));
+    cb(null, os.tmpdir());
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -26,14 +28,28 @@ const uploadToCloudinary = async (file: Express.Multer.File) => {
   });
 
   // Upload an image
-  const uploadResult = await cloudinary.uploader
-    .upload(file.path, {
+  try {
+    const uploadResult = await cloudinary.uploader.upload(file.path, {
       public_id: file.filename,
-    })
-    .catch((error) => {
-      console.log(error);
     });
-  return uploadResult;
+
+    // Delete file after upload
+    fs.unlink(file.path, (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+      } else {
+        console.log("File deleted successfully");
+      }
+    });
+
+    return uploadResult;
+  } catch (error) {
+    console.log(error);
+    // Attempt to delete file even if upload fails
+    fs.unlink(file.path, (err) => {
+      if (err) console.error("Error deleting file after failed upload:", err);
+    });
+  }
 };
 
 export const fileUploader = {

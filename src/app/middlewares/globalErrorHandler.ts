@@ -37,6 +37,11 @@ const globalErrorHandler = (
     }
   }
 
+  if (err.statusCode) {
+    statusCode = err.statusCode;
+    message = err.message;
+  }
+
   // Sanitize error before sending response
   const sanitizedError = sanitizeError(error);
 
