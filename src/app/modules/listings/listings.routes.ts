@@ -12,7 +12,7 @@ router.get(
 );
 
 router.post("/",
-  auth(UserRole.GUIDE),
+  auth(UserRole.GUIDE, UserRole.ADMIN),
   ListingController.createListing);
 
 router.patch("/:id", auth(UserRole.GUIDE), ListingController.updateListing);

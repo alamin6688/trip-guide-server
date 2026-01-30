@@ -13,15 +13,20 @@ const createListing = async (
   user: NonNullable<IAuthUser>,
   payload: createListingInput
 ): Promise<Listing> => {
-  //  Hard safety check
-  if (!user.guideId) {
-    throw new ApiError(httpStatus.FORBIDDEN, "Only guides can create listings");
+  // Resolve guideId: use authenticated user's guideId or payload.guideId if Admin
+  const guideId = user.guideId || (user.role === "ADMIN" ? payload.guideId : null);
+
+  if (!guideId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "Only guides can create listings, or Admin must provide a valid guideId"
+    );
   }
 
   // Category permission check
   const validCategory = await prisma.guideCategories.findFirst({
     where: {
-      guideId: user.guideId,
+      guideId: guideId,
       // categoryId: payload.categoryId,
     },
   });
@@ -37,7 +42,7 @@ const createListing = async (
   //  Duplicate prevention
   const existingListing = await prisma.listing.findFirst({
     where: {
-      guideId: user.guideId,
+      guideId: guideId,
       title: payload.title,
       city: payload.city,
       isActive: true,
@@ -55,7 +60,7 @@ const createListing = async (
 
   return prisma.listing.create({
     data: {
-      guideId: user.guideId,
+      guideId: guideId,
       categoryId: payload.categoryId,
       title: payload.title,
       description: payload.description,
@@ -100,7 +105,7 @@ const getAllFromDB = async (filters: any, options: IPaginationOptions) => {
         ? { [options.sortBy]: options.sortOrder }
         : { createdAt: "desc" },
     include: {
-      guide:true,
+      guide: true,
       bookings: true,
       categories: true,
     },

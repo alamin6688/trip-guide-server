@@ -22,6 +22,7 @@ export type createListingInput = {
   images: string;
   languages: string[];
   categoryId: string;
+  guideId?: string;
 };
 
 export type updateListingInput = {
