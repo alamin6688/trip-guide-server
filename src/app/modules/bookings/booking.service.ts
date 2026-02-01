@@ -311,6 +311,12 @@ const initiateStripePaymentForBooking = async (
       bookingId: booking.id,
       paymentId: payment.id,
     },
+    payment_intent_data: {
+      metadata: {
+        bookingId: booking.id,
+        paymentId: payment.id,
+      },
+    },
     // success_url: `${process.env.FRONTEND_URL}/payment/success`,
     // cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
     success_url: `${config.clientUrl}/dashboard/my-bookings`,

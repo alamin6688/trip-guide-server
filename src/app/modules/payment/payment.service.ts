@@ -3,26 +3,33 @@ import { prisma } from "../../shared/prisma";
 import { PaymentStatus, Prisma } from "@prisma/client";
 
 const handleStripeWebhookEvent = async (event: Stripe.Event) => {
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
+  let bookingId: string | undefined;
+  let paymentId: string | undefined;
+  let isPaid = false;
+  let sessionOrCharge: any;
 
-      const bookingId = session.metadata?.bookingId;
-      const paymentId = session.metadata?.paymentId;
+  if (event.type === "checkout.session.completed") {
+    sessionOrCharge = event.data.object as Stripe.Checkout.Session;
+    bookingId = sessionOrCharge.metadata?.bookingId;
+    paymentId = sessionOrCharge.metadata?.paymentId;
+    isPaid = sessionOrCharge.payment_status === "paid";
+    console.log("✅ Checkout session completed for:", sessionOrCharge.id);
+  } else if (event.type === "charge.succeeded") {
+    sessionOrCharge = event.data.object as Stripe.Charge;
+    bookingId = sessionOrCharge.metadata?.bookingId;
+    paymentId = sessionOrCharge.metadata?.paymentId;
+    isPaid = sessionOrCharge.paid === true;
+    console.log("✅ Charge succeeded for:", sessionOrCharge.id);
+  }
 
-      if (!bookingId || !paymentId) {
-        console.error("❌ Missing bookingId or paymentId in Stripe metadata");
-        return;
-      }
+  if (bookingId && paymentId) {
+    console.log(`💰 Processing payment for booking ${bookingId}, status: ${isPaid}`);
 
-      const isPaid = session.payment_status === "paid";
-
+    try {
       await prisma.$transaction(async (tx) => {
         // 1️⃣ Update booking payment status
         await tx.booking.update({
-          where: {
-            id: bookingId,
-          },
+          where: { id: bookingId },
           data: {
             paymentStatus: isPaid ? PaymentStatus.PAID : PaymentStatus.UNPAID,
           },
@@ -30,21 +37,20 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
 
         // 2️⃣ Update payment record
         await tx.payment.update({
-          where: {
-            id: paymentId,
-          },
+          where: { id: paymentId },
           data: {
             status: isPaid ? PaymentStatus.PAID : PaymentStatus.UNPAID,
-            paymentGatewayData: session as unknown as Prisma.JsonObject,
+            paymentGatewayData: sessionOrCharge as unknown as Prisma.JsonObject,
+            stripeEventId: event.id,
           },
         });
       });
-
-      break;
+      console.log(`✅ Database updated for booking ${bookingId}`);
+    } catch (error) {
+      console.error(`❌ Failed to update database for booking ${bookingId}:`, error);
     }
-
-    default:
-      console.log(`ℹ️ Unhandled event type: ${event.type}`);
+  } else {
+    console.log(`ℹ️ Event ${event.type} received but missing bookingId/paymentId metadata.`);
   }
 };
 
