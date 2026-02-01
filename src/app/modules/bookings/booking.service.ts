@@ -9,6 +9,7 @@ import { prisma } from "../../shared/prisma";
 import { IAuthUser } from "../../types/common";
 import httpStatus from "http-status";
 import { stripe } from "../../helper/stripe";
+import config from "../../../config";
 
 const getMyBookings = async (user: NonNullable<IAuthUser>) => {
   if (!user.touristId) {
@@ -312,10 +313,8 @@ const initiateStripePaymentForBooking = async (
     },
     // success_url: `${process.env.FRONTEND_URL}/payment/success`,
     // cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
-    // success_url: `https://www.programming-hero.com`,
-    // cancel_url: `https://next.programming-hero.com`,
-    success_url: `http://localhost:3000`,
-    cancel_url: `https://next.programming-hero.com`,
+    success_url: `${config.clientUrl}/dashboard/my-bookings`,
+    cancel_url: `${config.clientUrl}`,
   });
   // console.log("Stripe session created:", session.id, session.url);
 
