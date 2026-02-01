@@ -12,6 +12,9 @@ const handleStripeWebhookEvent = catchAsync(
 
     let event;
     try {
+      if (!req.body || (Buffer.isBuffer(req.body) && req.body.length === 0)) {
+        throw new Error("Request body is empty. Body parser might be interfering.");
+      }
       event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     } catch (err: any) {
       console.error("⚠️ Webhook signature verification failed:", err.message);

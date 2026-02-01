@@ -1,6 +1,5 @@
 node_modules
 # Keep environment variabees out of version control
-.env
 
 /generated/prisma
 
@@ -8,8 +7,7 @@ node_modules
 
 
 dist/
-.env
-.env.local
 uploads/*
 !uploads/gitkeep
 .10g
+config.bat

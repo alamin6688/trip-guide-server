@@ -8,9 +8,9 @@
     "schema": "./prisma/schema"
   },
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only ./src/server.ts",
-    "build": "tsc",
-    "start": "node ./dist/server.js",
+    "dev": "node init && ts-node-dev --respawn --transpile-only ./src/server.ts",
+    "build": "node init && tsc",
+    "start": "node init && node ./dist/server.js",
     "postinstall": "prisma generate --schema=./prisma/schema",
     "db:generate": "prisma generate --schema=./prisma/schema",
     "db:migrate": "prisma migrate --schema=./prisma/schema",
@@ -34,6 +34,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.11",
     "openai": "^6.9.1",
     "stripe": "^20.0.0",
