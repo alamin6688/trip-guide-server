@@ -16,8 +16,12 @@ const app: Application = express();
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  PaymentController.handleStripeWebhookEvent,
+  PaymentController.handleStripeWebhookEvent
 );
+
+app.get("/webhook", (req: Request, res: Response) => {
+  res.send({ message: "Stripe Webhook endpoint is reachable", status: "ok" });
+});
 
 app.use(
   cors({
@@ -27,15 +31,13 @@ app.use(
 );
 
 //parser
-app.use(
-  (req, res, next) => {
-    if (req.originalUrl === "/webhook") {
-      next();
-    } else {
-      express.json()(req, res, next);
-    }
+app.use((req, res, next) => {
+  if (req.originalUrl.includes("/webhook")) {
+    next();
+  } else {
+    express.json()(req, res, next);
   }
-);
+});
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
